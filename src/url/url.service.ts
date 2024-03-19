@@ -6,6 +6,9 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
 import { Url } from './schemas/url.schema';
+import { v4 as uuidv4 } from 'uuid'; // Import v4 function from uuid package
+
+
 
 @Injectable()
 export class UrlService {
@@ -18,5 +21,15 @@ export class UrlService {
     const url = await this.urlModel.find();
     return url;
 }
+
+async createShortUrl(url: string): Promise<string> {
+    const shortID = uuidv4(); // Generate UUID using uuidv4 function
+    await this.urlModel.create({
+      shortId: shortID,
+      redirectURL: url,
+      visitHistory: [],
+    });
+    return shortID;
+  }
 
 }
