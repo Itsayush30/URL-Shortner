@@ -4,32 +4,60 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import * as mongoose from 'mongoose';
+import { Model } from 'mongoose';
 import { Url } from './schemas/url.schema';
-import { v4 as uuidv4 } from 'uuid'; // Import v4 function from uuid package
-
-
+import * as shortid from 'shortid';
 
 @Injectable()
 export class UrlService {
   constructor(
     @InjectModel(Url.name)
-    private urlModel: mongoose.Model<Url>,
+    private readonly urlModel: Model<Url>,
   ) {}
 
-  async findAll(): Promise<Url[]>{
-    const url = await this.urlModel.find();
-    return url;
-}
+  async findAll(): Promise<Url[]> {
+    return await this.urlModel.find().exec();
+  }
 
-async createShortUrl(url: string): Promise<string> {
-    const shortID = uuidv4(); // Generate UUID using uuidv4 function
+  async createShortUrl(url: string): Promise<string> {
+    if (!url) {
+      throw new BadRequestException('URL is required');
+    }
+
+    const shortId = shortid.generate();
     await this.urlModel.create({
-      shortId: shortID,
+      shortId,
       redirectURL: url,
       visitHistory: [],
     });
-    return shortID;
+    return shortId;
   }
 
+  async getAnalytics(
+    shortId: string,
+  ): Promise<{ totalClicks: number; analytics: any[] }> {
+    const result = await this.urlModel.findOne({ shortId });
+
+    if (!result) {
+      throw new NotFoundException('Short URL not found');
+    }
+
+    return {
+      totalClicks: result.visitHistory.length,
+      analytics: result.visitHistory,
+    };
+  }
+
+  async redirectToOriginalUrl(shortId: string): Promise<string> {
+    const urlEntry = await this.urlModel.findOneAndUpdate(
+      { shortId },
+      { $push: { visitHistory: { timestamp: Date.now() } } },
+    );
+
+    if (!urlEntry) {
+      throw new NotFoundException('URL not found');
+    }
+
+    return urlEntry.redirectURL;
+  }
 }

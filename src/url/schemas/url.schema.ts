@@ -15,3 +15,4 @@ export class Url {
 }
 
 export const UrlSchema = SchemaFactory.createForClass(Url);
+ 
