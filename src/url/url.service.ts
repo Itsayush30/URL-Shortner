@@ -31,6 +31,7 @@ export class UrlService {
       shortId,
       redirectURL: url,
       visitHistory: [],
+      userAgent:[],
       user: user._id,
     });
     return shortId;
@@ -38,8 +39,17 @@ export class UrlService {
 
   async getAnalytics(
     shortId: string,
-  ): Promise<{ totalClicks: number; analytics: any[] }> {
+  ): Promise<{
+    totalClicks: number;
+    analytics: any[];
+    userAgent: string[];
+    browser: string[];
+    platform: string[];
+    host: string[];
+  }> {
     const result = await this.urlModel.findOne({ shortId });
+
+    console.log("result",result)
 
     if (!result) {
       throw new NotFoundException('Short URL not found');
@@ -48,6 +58,10 @@ export class UrlService {
     return {
       totalClicks: result.visitHistory.length,
       analytics: result.visitHistory,
+      userAgent: result.userAgent,
+      browser: result.browser,
+      platform: result.platform,
+      host: result.host,
     };
   }
 

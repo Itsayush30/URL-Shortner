@@ -18,17 +18,17 @@ export class Url {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   user: User;
 
-  @Prop({ type: String })
-  userAgent: string;
+  @Prop([String]) // Change the type to an array of strings
+  userAgent: string[];
 
-  @Prop({ type: String })
-  host: string;
+  @Prop([String])
+  host: string[];
 
-  @Prop({ type: String })
-  platform: string;
+  @Prop([String])
+  platform: string[];
 
-  @Prop({ type: String })
-  browser: string;
+  @Prop([String])
+  browser: string[];
 }
 
 export const UrlSchema = SchemaFactory.createForClass(Url);
