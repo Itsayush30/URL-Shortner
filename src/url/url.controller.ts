@@ -13,6 +13,7 @@ import {
 import { UrlService } from './url.service';
 import { Url } from './schemas/url.schema';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 
 @Controller()
 export class UrlController {
@@ -33,7 +34,7 @@ export class UrlController {
       throw new BadRequestException('url is required');
     }
     //console.log("here",req.user._id)
-    const shortId = await this.urlService.createShortUrl(body.url,req.user);
+    const shortId = await this.urlService.createShortUrl(body.url, req.user);
     return { id: shortId };
   }
 
@@ -51,9 +52,17 @@ export class UrlController {
 
   @Get(':shortId')
   @Redirect('', 302)
-  async redirectToOriginalUrl(@Param('shortId') shortId: string) {
+  async redirectToOriginalUrl(
+    @Param('shortId') shortId: string,
+    @Req() request: Request,
+  ) {
     try {
-      const redirectURL = await this.urlService.redirectToOriginalUrl(shortId);
+      console.log('Referrer:', request.headers);
+
+      const redirectURL = await this.urlService.redirectToOriginalUrl(
+        shortId,
+        request.headers,
+      );
       return { url: redirectURL };
     } catch (error) {
       if (error instanceof NotFoundException) {

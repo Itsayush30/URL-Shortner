@@ -51,10 +51,20 @@ export class UrlService {
     };
   }
 
-  async redirectToOriginalUrl(shortId: string): Promise<string> {
+  async redirectToOriginalUrl(shortId: string, headers: any): Promise<string> {
+    console.log('here3', headers.host);
     const urlEntry = await this.urlModel.findOneAndUpdate(
       { shortId },
-      { $push: { visitHistory: { timestamp: Date.now() } } },
+      {
+        $push: {
+          visitHistory: { timestamp: Date.now() },
+          userAgent: headers['user-agent'],
+          browser: headers['sec-ch-ua'],
+          platform: headers['sec-ch-ua-platform'],
+          host: headers.host,
+        },
+      },
+      { new: true },
     );
 
     if (!urlEntry) {
