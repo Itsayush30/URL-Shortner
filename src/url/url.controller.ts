@@ -7,9 +7,12 @@ import {
   Param,
   NotFoundException,
   Redirect,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { Url } from './schemas/url.schema';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 export class UrlController {
@@ -21,13 +24,16 @@ export class UrlController {
   }
 
   @Post()
+  @UseGuards(AuthGuard())
   async generateNewShortUrl(
     @Body() body: { url: string },
+    @Req() req,
   ): Promise<{ id: string }> {
     if (!body.url) {
       throw new BadRequestException('url is required');
     }
-    const shortId = await this.urlService.createShortUrl(body.url);
+    //console.log("here",req.user._id)
+    const shortId = await this.urlService.createShortUrl(body.url,req.user);
     return { id: shortId };
   }
 

@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Url } from './schemas/url.schema';
 import * as shortid from 'shortid';
+import { User } from '../auth/schemas/user.schema';
 
 @Injectable()
 export class UrlService {
@@ -19,16 +20,18 @@ export class UrlService {
     return await this.urlModel.find().exec();
   }
 
-  async createShortUrl(url: string): Promise<string> {
+  async createShortUrl(url: string, user: User): Promise<string> {
     if (!url) {
       throw new BadRequestException('URL is required');
     }
 
     const shortId = shortid.generate();
+    console.log('here2', user._id);
     await this.urlModel.create({
       shortId,
       redirectURL: url,
       visitHistory: [],
+      user: user._id,
     });
     return shortId;
   }
