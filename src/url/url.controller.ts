@@ -56,4 +56,10 @@ export class UrlController {
       throw error;
     }
   }
+
+  @Post('delete-old-urls')
+  async deleteOldUrls() {
+    await this.urlService.deleteUrlsOlderThan24Hours();
+    return { message: 'Old URLs deleted successfully' };
+  }
 }

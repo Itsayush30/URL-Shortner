@@ -60,4 +60,10 @@ export class UrlService {
 
     return urlEntry.redirectURL;
   }
+
+  async deleteUrlsOlderThan24Hours(): Promise<void> {
+    //console.log("WORKING")
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    await this.urlModel.deleteMany({ createdAt: { $lt: twentyFourHoursAgo } });
+  }
 }
