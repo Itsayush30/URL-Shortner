@@ -43,7 +43,7 @@ export class UrlController {
   }
 
   @Get('analytics/:shortId')
-  @UseGuards(ThrottlerGuard)
+  @UseGuards(AuthGuard(), ThrottlerGuard)
   async getAnalytics(@Param('shortId') shortId: string) {
     try {
       return await this.urlService.getAnalytics(shortId);
