@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException, Inject } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  Inject,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Url } from './schemas/url.schema';
@@ -33,6 +38,7 @@ export class UrlService {
       userAgent: [],
       user: user._id,
     });
+
     return shortId;
   }
 
@@ -53,7 +59,7 @@ export class UrlService {
       host: string[];
     }>(`analytics_${shortId}`);
     if (cachedAnalytics) {
-      console.log("check2",cachedAnalytics)
+      console.log('check2', cachedAnalytics);
       return cachedAnalytics;
     } else {
       const result = await this.urlModel.findOne({ shortId });
@@ -74,7 +80,7 @@ export class UrlService {
       };
 
       await this.cacheService.set(`analytics_${shortId}`, analytics);
-      console.log("check",analytics)
+      console.log('check', analytics);
       return analytics;
     }
   }
@@ -98,6 +104,18 @@ export class UrlService {
     if (!urlEntry) {
       throw new NotFoundException('URL not found');
     }
+
+    // Update cache for analytics related to this short ID
+    const updatedAnalytics = {
+      totalClicks: urlEntry.visitHistory.length,
+      analytics: urlEntry.visitHistory,
+      userAgent: urlEntry.userAgent,
+      browser: urlEntry.browser,
+      platform: urlEntry.platform,
+      host: urlEntry.host,
+    };
+
+    await this.cacheService.set(`analytics_${shortId}`, updatedAnalytics);
 
     return urlEntry.redirectURL;
   }
