@@ -9,16 +9,19 @@ import {
   Redirect,
   UseGuards,
   Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { Url } from './schemas/url.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @Controller()
 export class UrlController {
   constructor(private urlService: UrlService) {}
 
+  @UseInterceptors(CacheInterceptor) // Automatically cache the response for this endpoint
   @Get('/all')
   async getAllNotes(): Promise<Url[]> {
     return this.urlService.findAll();

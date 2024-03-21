@@ -1,19 +1,18 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Url } from './schemas/url.schema';
 import * as shortid from 'shortid';
 import { User } from '../auth/schemas/user.schema';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class UrlService {
   constructor(
     @InjectModel(Url.name)
     private readonly urlModel: Model<Url>,
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) {}
 
   async findAll(): Promise<Url[]> {
@@ -31,15 +30,13 @@ export class UrlService {
       shortId,
       redirectURL: url,
       visitHistory: [],
-      userAgent:[],
+      userAgent: [],
       user: user._id,
     });
     return shortId;
   }
 
-  async getAnalytics(
-    shortId: string,
-  ): Promise<{
+  async getAnalytics(shortId: string): Promise<{
     totalClicks: number;
     analytics: any[];
     userAgent: string[];
@@ -47,22 +44,39 @@ export class UrlService {
     platform: string[];
     host: string[];
   }> {
-    const result = await this.urlModel.findOne({ shortId });
+    const cachedAnalytics = await this.cacheService.get<{
+      totalClicks: number;
+      analytics: any[];
+      userAgent: string[];
+      browser: string[];
+      platform: string[];
+      host: string[];
+    }>(`analytics_${shortId}`);
+    if (cachedAnalytics) {
+      console.log("check2",cachedAnalytics)
+      return cachedAnalytics;
+    } else {
+      const result = await this.urlModel.findOne({ shortId });
 
-    console.log("result",result)
+      console.log('result', result);
 
-    if (!result) {
-      throw new NotFoundException('Short URL not found');
+      if (!result) {
+        throw new NotFoundException('Short URL not found');
+      }
+
+      const analytics = {
+        totalClicks: result.visitHistory.length,
+        analytics: result.visitHistory,
+        userAgent: result.userAgent,
+        browser: result.browser,
+        platform: result.platform,
+        host: result.host,
+      };
+
+      await this.cacheService.set(`analytics_${shortId}`, analytics);
+      console.log("check",analytics)
+      return analytics;
     }
-
-    return {
-      totalClicks: result.visitHistory.length,
-      analytics: result.visitHistory,
-      userAgent: result.userAgent,
-      browser: result.browser,
-      platform: result.platform,
-      host: result.host,
-    };
   }
 
   async redirectToOriginalUrl(shortId: string, headers: any): Promise<string> {
