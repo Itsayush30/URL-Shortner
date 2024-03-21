@@ -16,6 +16,7 @@ import { Url } from './schemas/url.schema';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller()
 export class UrlController {
@@ -28,7 +29,7 @@ export class UrlController {
   }
 
   @Post()
-  @UseGuards(AuthGuard())
+  @UseGuards(AuthGuard(), ThrottlerGuard)
   async generateNewShortUrl(
     @Body() body: { url: string },
     @Req() req,
@@ -42,6 +43,7 @@ export class UrlController {
   }
 
   @Get('analytics/:shortId')
+  @UseGuards(ThrottlerGuard)
   async getAnalytics(@Param('shortId') shortId: string) {
     try {
       return await this.urlService.getAnalytics(shortId);
@@ -54,6 +56,7 @@ export class UrlController {
   }
 
   @Get(':shortId')
+  @UseGuards(ThrottlerGuard)
   @Redirect('', 302)
   async redirectToOriginalUrl(
     @Param('shortId') shortId: string,
@@ -76,6 +79,7 @@ export class UrlController {
   }
 
   @Post('delete-old-urls')
+  @UseGuards(ThrottlerGuard)
   async deleteOldUrls() {
     await this.urlService.deleteUrlsOlderThan24Hours();
     return { message: 'Old URLs deleted successfully' };
