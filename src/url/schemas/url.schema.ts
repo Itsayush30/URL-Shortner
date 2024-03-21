@@ -29,6 +29,9 @@ export class Url {
 
   @Prop([String])
   browser: string[];
+
+  @Prop([String])
+  referrer: string[];
 }
 
 export const UrlSchema = SchemaFactory.createForClass(Url);

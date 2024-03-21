@@ -45,6 +45,7 @@ export class UrlService {
   async getAnalytics(shortId: string): Promise<{
     totalClicks: number;
     analytics: any[];
+    referrer: string[];
     userAgent: string[];
     browser: string[];
     platform: string[];
@@ -53,6 +54,7 @@ export class UrlService {
     const cachedAnalytics = await this.cacheService.get<{
       totalClicks: number;
       analytics: any[];
+      referrer: string[];
       userAgent: string[];
       browser: string[];
       platform: string[];
@@ -73,6 +75,7 @@ export class UrlService {
       const analytics = {
         totalClicks: result.visitHistory.length,
         analytics: result.visitHistory,
+        referrer: result.referrer,
         userAgent: result.userAgent,
         browser: result.browser,
         platform: result.platform,
@@ -96,6 +99,7 @@ export class UrlService {
           browser: headers['sec-ch-ua'],
           platform: headers['sec-ch-ua-platform'],
           host: headers.host,
+          referrer: headers.referrer || headers.referer  || 'Unknown',
         },
       },
       { new: true },
@@ -112,6 +116,7 @@ export class UrlService {
       userAgent: urlEntry.userAgent,
       browser: urlEntry.browser,
       platform: urlEntry.platform,
+      referrer: urlEntry.referrer,
       host: urlEntry.host,
     };
 
