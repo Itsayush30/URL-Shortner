@@ -37,7 +37,7 @@ export class UrlController {
     if (!body.url) {
       throw new BadRequestException('url is required');
     }
-    //console.log("here",req.user._id)
+    //console.log("check"req.user._id)
     const shortId = await this.urlService.createShortUrl(body.url, req.user);
     return { id: shortId };
   }
@@ -63,8 +63,7 @@ export class UrlController {
     @Req() request: Request,
   ) {
     try {
-      console.log('Referrer:', request.headers);
-
+      //console.log(request.headers);
       const redirectURL = await this.urlService.redirectToOriginalUrl(
         shortId,
         request.headers,

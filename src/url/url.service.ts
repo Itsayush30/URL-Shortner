@@ -30,7 +30,7 @@ export class UrlService {
     }
 
     const shortId = shortid.generate();
-    console.log('here2', user._id);
+    //console.log('UserId', user._id);
     await this.urlModel.create({
       shortId,
       redirectURL: url,
@@ -61,12 +61,12 @@ export class UrlService {
       host: string[];
     }>(`analytics_${shortId}`);
     if (cachedAnalytics) {
-      console.log('check2', cachedAnalytics);
+      //console.log('check2', cachedAnalytics);
       return cachedAnalytics;
     } else {
       const result = await this.urlModel.findOne({ shortId });
 
-      console.log('result', result);
+      //console.log('result', result);
 
       if (!result) {
         throw new NotFoundException('Short URL not found');
@@ -83,13 +83,13 @@ export class UrlService {
       };
 
       await this.cacheService.set(`analytics_${shortId}`, analytics);
-      console.log('check', analytics);
+      //console.log('checkAnalytics', analytics);
       return analytics;
     }
   }
 
   async redirectToOriginalUrl(shortId: string, headers: any): Promise<string> {
-    console.log('here3', headers.host);
+    
     const urlEntry = await this.urlModel.findOneAndUpdate(
       { shortId },
       {
